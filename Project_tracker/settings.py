@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -56,7 +57,7 @@ ROOT_URLCONF = 'Project_tracker.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -117,7 +118,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+# Only needed if you want to use custom static directories
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # Add your project's static directory
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -129,10 +135,15 @@ JAZZMIN_SETTINGS = {
     "site_header": "Project Tracker",
     "site_brand": "Project Tracker",
     "welcome_sign": "Welcome to Project Tracker Admin",
+    'custom_base_template': 'admin/custom_base_site.html',
     "show_sidebar": True,
     "navigation_expanded": True,
+    "custom_css": "admin/css/baseCustom.css",
+    "order_with_respect_to": ["tracker"],  # Makes tracker app appear first
+    "apps_order": ["auth", "tracker"],  # Explicitly include 'tracker' app
     "topmenu_links": [
         {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Projects", "url": "admin:tracker_project_changelist", "permissions": ["tracker.view_project"]},  # Add this line
     ],
     "usermenu_links": [
         {"name": "Support", "url": "https://support.example.com", "new_window": True},
@@ -143,5 +154,24 @@ JAZZMIN_SETTINGS = {
         "auth.User": "fas fa-users",  # Icon for User model
     },
     "order_with_respect_to": ["tracker.Project", "tracker.Task"],
+    "side_menu": [
+        # User Profile Section
+        {
+            "name": "Tracker", 
+            "icon": "fas fa-tasks",  # Icon for Tracker
+            "children": [
+                {
+                    "name": "Projects", 
+                    "url": "admin:tracker_project_changelist",  # URL for the Project change list
+                    "icon": "fas fa-project-diagram",  # Icon for Projects
+                },
+                # You can add other sections like "Tasks" or "Sprints" here if needed
+            ]
+        },
+        {"name": "Users", "url": "admin:auth_user_changelist", "icon": "fas fa-users"},
+        {"name": "Groups", "url": "admin:auth_group_changelist", "icon": "fas fa-users-cog"},
+        # More menu items here
+    ],
 }
+
 

@@ -1,0 +1,40 @@
+<!-- account_list.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Accounts</title>
+    <style>
+        .account-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            width: 200px;
+            display: inline-block;
+        }
+        .account-card h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .account-card p {
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>My Accounts</h1>
+    <div>
+        {% for account in accounts %}
+        <div class="account-card">
+            <h3>{{ account.name }}</h3>
+            <p>{{ account.description }}</p>
+            <a href="{% url 'projects_list' account.id %}">View Projects</a>  <!-- Add link to view projects for the account -->
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

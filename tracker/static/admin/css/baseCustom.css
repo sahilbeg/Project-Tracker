@@ -1,0 +1,14 @@
+
+/* Hide the hamburger icon in Jazzmin's navbar */
+#jazzy-navbar .nav-link[data-widget="pushmenu"] {
+    display: none !important;
+}
+
+aside#jazzy-sidebar{
+    height: 100vh !important;
+}
+
+.content-wrapper {
+    height: 100vh;
+    margin-left: 70px !important;
+}

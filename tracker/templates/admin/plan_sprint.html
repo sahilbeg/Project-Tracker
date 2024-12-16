@@ -1,0 +1,150 @@
+{% extends "admin/base_site.html" %}
+{% block bodyclass %}project-sprint-plan-page{% endblock %}
+{% load i18n %}
+{% load custom_filters %}
+{% load static %}
+
+{% block extrahead %}
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/custom_admin.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="headline-container">
+        <h1>Plan Sprint for Project: {{ project.name }}</h1>
+        <!-- Participant initials -->
+        <div class="participant-initials">
+            {% for user in project.participants.all %}
+                <span class="participant-circle" title="{{ user.get_full_name }}">
+                    {{ user.get_full_name|split_name }}
+                </span>
+            {% endfor %}
+            {% if project.owner not in project.participants.all %}
+                <span class="participant-circle" title="{{ project.owner.get_full_name }}">
+                    {{ project.owner.get_full_name|split_name }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="sprint-main-body-container">
+        <!-- Sprint Cards -->
+        <div class="sprint-cards">
+            {% for sprint in project.sprints.all %}
+                <div class="sprint-card" data-sprint-id="{{ sprint.pk }}" data-sprint-end="{{ sprint.end_date }}">
+                    <div class="sprint-card-header">
+                        <h3>Sprint: 
+                            <label class="sprint-name-label">{{ sprint.name }}</label>
+                        </h3>
+                        <form method="post" action="{% url 'tracker_sprint_delete' sprint.pk %}" style="display: inline; float: right;">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-sprint-btn" onclick="return confirm('Are you sure?');">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                    <div class="sprint-card-info">
+                        <p><strong>Start Date:</strong> {{ sprint.start_date }}</p>
+                        <p><strong>End Date:</strong> {{ sprint.end_date }}</p>
+                    </div>
+        
+                    <!-- Tasks Table -->
+                    <div class="tasks-section-container">
+                        
+                    </div>
+
+                    <!-- Add Task Button -->
+                    <div class="add-task-btn-container" style="margin-top: 10px; text-align: center;">
+                        <button type="button" id="sprint-card-add-task" class="sprint-card-add-task">
+                            <i class="fa fa-plus"></i> Add Task
+                        </button>
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+        
+
+        <!-- Add Sprint Button -->
+        <div class="add-sprint-container">
+            <button id="add-sprint-btn" class="add-sprint-button">Add Sprint</button>
+        </div>
+    </div>
+
+    <!-- Background Blur -->
+    <div id="modal-backdrop" class="hidden"></div>
+
+    <!-- Popup Form -->
+    <div id="sprint-form-modal" class="hidden modal">
+        <div class="modal-content">
+            <!-- Close Button -->
+            <button id="close-modal" class="close-button">&times;</button>
+            
+            <h2>Sprint Info</h2>
+            <form id="sprint-form">
+                {% csrf_token %}
+                <label>Sprint Title</label>
+                <input type="text" id="sprint-name" required placeholder="Enter the title of the sprint">
+                <div id="sprint-name-error" class="error-message"></div>
+                
+                <div class="sprint-calender-container">
+                    <div class="sprint-calender-box">
+                        <label>Start Date:</label>
+                        <input type="date" id="start-date" required>
+                    </div>
+                    <div class="sprint-calender-box">
+                        <label>End Date:</label>
+                        <input type="date" id="end-date" required>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" id="save-sprint-btn" class="save-sprint-button" data-url="{% url 'save_sprint' project.pk %}" disabled>Save Sprint</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrajs %}
+    <script>
+        // Render project owner and participants as a valid JSON array
+        window.taskOptions = JSON.parse(`[
+            {% if project.owner %}
+                {
+                    "id": "{{ project.owner.id }}",
+                    "full_name": "{{ project.owner.get_full_name }}",
+                    "username": "{{ project.owner.username }}",
+                    "role": "Owner"
+                }{% if project.participants.exists %},{% endif %}
+            {% endif %}
+            {% for user in project.participants.all %}
+                {
+                    "id": "{{ user.id }}",
+                    "full_name": "{{ user.get_full_name }}",
+                    "username": "{{ user.username }}",
+                    "role": "Participant"
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]`);
+
+        // console.log("Fetched project participants including owner:", window.taskOptions);
+    </script>
+    
+    <script>
+        const sprintSaveUrl = "{% url 'save_sprint' project.pk %}";
+    </script>
+    <script src="{% static 'admin/js/sprint_form_creation.js' %}"></script>
+    <script src="{% static 'admin/js/submit_task.js' %}"></script>
+    <script src="{% static 'admin/js/add_task.js' %}"></script>
+
+    <script id="project-data" type="application/json">
+        {
+            "participants": [
+                { "id": "{{ project.owner.id }}", "name": "{{ project.owner.get_full_name }}" },
+                {% for user in project.participants.all %}
+                    { "id": "{{ user.id }}", "name": "{{ user.get_full_name }}" }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]
+        }
+    </script>
+     
+{% endblock %}
